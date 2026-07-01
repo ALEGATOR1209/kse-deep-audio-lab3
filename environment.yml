@@ -1,0 +1,19 @@
+name: dl-audio-3
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - ffmpeg
+  - libsndfile
+  - numba
+  - llvmlite
+  - librosa
+  - numpy
+  - scipy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - ipykernel
+  - jupyter
+  - python-dotenv
