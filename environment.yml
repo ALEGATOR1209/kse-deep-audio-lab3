@@ -18,3 +18,7 @@ dependencies:
   - jupyter
   - python-dotenv
   - pytorch
+  - transformers
+  - evaluate
+  - lightning
+  - jiwer
