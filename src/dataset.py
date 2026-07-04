@@ -152,10 +152,9 @@ class TimitDataset(Dataset):
     )[self.features_column][0]
 
     tok = self.processor.tokenizer
-    phone_ids = tok.convert_tokens_to_ids(row["phonemes"])
-    labels = tok.prefix_tokens + phone_ids + [tok.eos_token_id]
+    phone_ids = tok.convert_tokens_to_ids(row["phonemes_39"])
 
-    return {self.features_column: input_features, self.labels_column: labels}
+    return {self.features_column: input_features, self.labels_column: phone_ids}
 
 def build_timit_df(meta, base_dir, sr):
   audio = meta[meta["is_converted_audio"] == True]
@@ -188,7 +187,7 @@ def map_phonemes(phonemes, phone_map):
         mapped.append(phone_map[p])
     else:
       unmapped.add(p)
-      mapped.append("[UNK]")
+      mapped.append("<unk>")
 
   if unmapped:
     print(f"Warning: phones not in PHONE_MAP: {unmapped}")
