@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+import pandas as pd
+import numpy as np
 from torch.utils.data import Dataset
 import librosa
 import torch
@@ -115,9 +117,80 @@ def sanitize(df):
       .str.strip()
   )
 
+  df = df[df["label"].str.len() > 0]
+
   disallowed_pattern = f"[^{ukrainian_chars}]"
   clean_mask = ~df["label"].str.contains(disallowed_pattern, regex=True)
 
   print(f"After filter: {clean_mask.sum()} / {len(df)} rows")
 
   return df[clean_mask]
+
+class TimitDataset(Dataset):
+  def __init__(
+    self,
+    df,
+    processor,
+    features_column="input_features",
+    labels_column="labels"
+  ):
+    self.df = df.reset_index(drop=True)
+    self.processor = processor
+    self.sr = 16000
+    self.features_column = features_column
+    self.labels_column = labels_column
+
+  def __len__(self):
+    return len(self.df)
+
+  def __getitem__(self, i):
+    row = self.df.iloc[i]
+    audio, _ = librosa.load(row["path"], sr=self.sr)
+
+    input_features = self.processor(
+      audio, sampling_rate=self.sr, return_tensors="pt"
+    )[self.features_column][0]
+
+    tok = self.processor.tokenizer
+    phone_ids = tok.convert_tokens_to_ids(row["phonemes"])
+    labels = tok.prefix_tokens + phone_ids + [tok.eos_token_id]
+
+    return {self.features_column: input_features, self.labels_column: labels}
+
+def build_timit_df(meta, base_dir, sr):
+  audio = meta[meta["is_converted_audio"] == True]
+
+  timit_df = []
+  for _, row in audio.iterrows():
+    wav = base_dir / row["path_from_data_dir"]
+    phn = wav.with_name(row["filename"].replace(".WAV.wav", ".PHN"))
+    phonemes = [line.split()[2] for line in phn.read_text().splitlines()]
+    timit_df.append({
+      "path": str(wav),
+      "filename": row["filename"],
+      "speaker_id": row["speaker_id"],
+      "dialect_region": row["dialect_region"],
+      "sentence_type": row["filename"][:2],
+      "duration": librosa.get_duration(path=wav, sr=sr),
+      "gender": row["speaker_id"][0],
+      "phonemes": phonemes,
+    })
+
+  return pd.DataFrame(timit_df)
+
+def map_phonemes(phonemes, phone_map):
+  mapped = []
+  unmapped = set()
+
+  for p in phonemes:
+    if p in phone_map:
+      if phone_map[p] is not None:
+        mapped.append(phone_map[p])
+    else:
+      unmapped.add(p)
+      mapped.append("[UNK]")
+
+  if unmapped:
+    print(f"Warning: phones not in PHONE_MAP: {unmapped}")
+
+  return np.array(mapped, dtype=object)
