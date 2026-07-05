@@ -34,7 +34,7 @@ One of the weakness of these metrics in our context, especially in the Toronto d
 
 $$\text{WIL}=1-\bigg(\frac{C}{N}+\frac{C}{P}\bigg)$$
 
-Where C is the number of correctly transcribed words, N is the total number of words in the ground truth transcript, P is the number of words in the predicted transcript. 
+Where C is the number of correctly transcribed words, N is the total number of words in the ground truth transcript, P is the number of words in the predicted transcript.
 
 WIL metric was not used in this work.
 
@@ -63,8 +63,42 @@ Validation split consisted of 1/5th of the training corpus data.
 
 ## Whisper Approach
 
+We trained Whisper model from the multilingual checkpoint `"openai/whisper-small"`.
 
+<div align="center">
+  <img src="img/whisper_timit.png" alt="" height="200px">
+  <img src="img/whisper_toronto.png" alt="" height="200px">
+</div>
 
 ## Self-Supervised Approach
 
+### Toronto Dataset
+
+We trained a data2vec model based on checkpoint `"Respeecher/ukrainian-data2vec"`. As a baseline comparison, `"Respeecher/ukrainian-data2vec-asr"` model was used. Samples that contained non-Ukrainian characters were discarding, brinding down the total number of samples used to 12722 out of 18198. Character vocabulary was built based on these samples.
+
+We trained 4 variants of the model featuring different unfreeze levels: head only, head + 4 tranformer layers, head + 12 layers, head + 24 layers. For the head, learning rate was set to `1e-4`, while for transformers it was `1e-5`. We used gradient clip at 1.0.
+
+<div align="center">
+  <img src="img/data2vec_toronto.png" alt="" height="200px">
+</div>
+
+### TIMIT Dataset
+
+We trained a data2vec model based on checkpoint `"facebook/data2vec-audio-base"`. Phoneme vocabulary was built by re-mapping the original 61 phonemes set to 39 phonemes according to Lee & Hon (1989).
+
+We trained 4 variants of the model: head only, 4 layers, 6 layers, 12 layers.
+
+<div align="center">
+  <img src="img/data2vec_timit.png" alt="" height="200px">
+</div>
+
 ## Audio Filtering and Signal Enhancement
+
+Given that Toronto dataset contains a lot of noise, we applied following quality improvement steps:
+
+1. resampling to 16KHz
+2. dereverberation (`npe-wer`)
+3. noise reduction (`noisereduce`)
+4. loudness normalization (`pyloudnorm`)
+
+Produced clean dataset was tested against the baseline model and used for training of fine-tune models.
