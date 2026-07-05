@@ -105,6 +105,28 @@ Produced clean dataset was tested against the baseline model and used for traini
 
 ![](img/validation.png)
 
+Example of transcriptions across models:
+
+```
+original
+хто це такий давайте коротко нагадаємо людям що воно таке той янукович
+
+baseline
+плостакий давай те коротко нагадаємо людям що воно таке той янукович
+
+data2vec_head
+тоце такийс дайти хорско нагадаєм людим щовоно такке   той янукович
+
+data2vec_head+4_layers
+то це таккийс давайте хоротко нагадаємо людям що воно таке той янукович
+
+data2vec_head+12_layers
+хто це такий давайте коротко нагадаємо людям що воно таке той янукович
+
+data2vec_head+24_layers
+хто це такий давайте коротко нагадаємо людям що воно таке той янукович
+```
+
 ## AI Use Disclosure
 
 Claude Code was used to brainstorm ideas, generate plots and some scripts, validate approaches and debug code.
