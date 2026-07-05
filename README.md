@@ -101,4 +101,14 @@ Given that Toronto dataset contains a lot of noise, we applied following quality
 3. noise reduction (`noisereduce`)
 4. loudness normalization (`pyloudnorm`)
 
-Produced clean dataset was tested against the baseline model and used for training of fine-tune models.
+Produced clean dataset was tested against the baseline model and used for training of fine-tune models. Surprisingly, it resulted in worse WER and CER in both baseline model and fine-tuned models.
+
+![](img/validation.png)
+
+## AI Use Disclosure
+
+Claude Code was used to brainstorm ideas, generate plots and some scripts, validate approaches and debug code.
+
+Our chats:
+
+1. https://claude.ai/share/42688c86-a517-4463-9e86-1d9f47d2dce0
